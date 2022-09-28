@@ -3,6 +3,7 @@ package pro.sky.Employee;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 // отвечает за адреса
@@ -31,7 +32,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/findAll")
-    public List<Employee> findAll() {
+    public Collection<Employee> findAll() {
         return employeeServis.findAll();
     }
 
