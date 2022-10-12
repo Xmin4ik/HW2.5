@@ -3,25 +3,26 @@ package pro.sky.Employee;
 
 import org.springframework.stereotype.Service;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
 
 @Service
 public class EmployeeServis {
     private static final int SIZE = 4;
-    private final List<Employee> employees; //создает список
+    private String firstName;
+    private String lastName;
+    private Integer department;
+    private int salary;
+    private final Map<Integer, List<Employee>> employees = new HashMap<>(); //создает список
 
-    public EmployeeServis() {
-        this.employees = new ArrayList<>();
-    }
 
-
-    public Employee add(String firstName, String lastName) {
-        Employee employee = new Employee(firstName, lastName); //создает другой список для проверки
-        if (employees.contains(employee)) //сравнивает в списках на совпадения
+    public Employee add(String firstName, String lastName, Integer department, int salary) {
+        Employee employee = new Employee(firstName, lastName, department, salary); //создает другой список для проверки
+        if (department < 0 || department >= 6) {
+            throw new IllegalArgumentException("Такого депортамента нет");
+        }
+        if (employees.containsValue(employee.getFullName())) //сравнивает в списках на совпадения
         {
             throw new EmployeeAlreadyAddedException();
         }
@@ -29,31 +30,76 @@ public class EmployeeServis {
         {
             throw new EmployeeStorageIsFullException();
         }
-        employees.add(employee);//добовляет
-        return employee; //работает++
+        employees.put(employee.getDepartment(), employee);
+        return employee;
     }
-    public Employee delete(String firstName, String lastName) {
-        Employee employee = new Employee(firstName, lastName);
-        if (employees.contains(employee)) {
-            employees.remove(employee);// не работает(
-            return employee;
+
+    public Employee delete(String firstName, String lastName, Integer department, int salary) {
+        Employee employee = new Employee(firstName, lastName, department, salary);
+        if (department < 0 || department >= 6) {
+            throw new IllegalArgumentException("Такого депортамента нет");
+        }
+        if (employees.containsValue(employee.getFullName())) {
+            return (Employee) employees.remove(employee.getFullName());
+
         }
         throw new EmployeeNotFoundException();
     }
 
 
-    public Employee find(String firstName, String lastName) {
-        Employee employee = new Employee(firstName, lastName);
-        if (employees.contains(employee)) {
-            return employee;
+    public Employee find(String firstName, String lastName, Integer department, int salary) {
+        Employee employee = new Employee(firstName, lastName, department, salary);
+        if (employees.containsValue(employee.getFullName())) {
+            return (Employee) employees.get(employee.getFullName());
         }
         throw new EmployeeNotFoundException();
     }
 
 
-    public List<Employee> findAll() {
-        return Collections.unmodifiableList(employees);
+    public Employee findAllInDepartment(Integer department) {
+        Employee employee = new Employee(firstName, lastName, department, salary);
+        employees.values().stream()
+                .filter(e -> e.getDepartment() == department)
+                .forEach(s -> System.out.println(s.getFullName()));
+        return (Employee) employees.get(employee.getFullName());
+
+
     }
+
+    public Collection<Employee> finDepartments(Integer department) {
+        return employees.values().stream()
+                .filter(em -> em.getDepartment() == department)
+                .collect(Collectors.toList());
+    }
+
+    public void findEmployees() {
+        Map<Integer, List<Employee>> map = employees.values().stream()
+                .collect(Collectors.groupingBy(Employee::getDepartment));
+    }
+
+
+    public void findInDepartmentMaxSalary(Integer department) {
+        Employee employee = new Employee(firstName, lastName, department, salary);
+        Map<Integer, List<Employee>> map = employees.values().stream()
+                .filter(e -> e.getDepartment() == department)
+                .max(Comparator.comparingInt(Employee::getSalary))
+                .orElseThrow(EmployeeNotFoundException::new);
+
+
+    }
+
+    public void findInDepartmentMinSalary(Integer department) {
+        Employee employee = new Employee(firstName, lastName, department, salary);
+        employees.values().stream()
+                .filter(e -> employee.getDepartment() == department) // фильтр ищим в номере департамента //выбираем самое большее значение
+                .min(Comparator.comparingInt(Employee::getSalary))
+                .orElseThrow(EmployeeNotFoundException::new); //в последней строке бросаем исключение, если не нашли искомый элемент
+
+    }
+
+
+    public Map<Integer, List<Employee>> findAll() {
+        return (Map<Integer, List<pro.sky.Employee.Employee>>) employees.values();
+    }
+
 }
-
-
