@@ -1,8 +1,9 @@
 package pro.sky.Employee;
 
+import java.util.List;
 import java.util.Objects;
 
-public class Employee {
+public class Employee  {
     private final String name;
     private final String lastName;
     private int department; //отдел
